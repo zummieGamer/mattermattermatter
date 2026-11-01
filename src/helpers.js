@@ -5,11 +5,18 @@ export function HollowCircle(x, y, radius, segments = 64) {
     const bodies = [];
     const thickness = 15;
 
-    // Calculate the length of each segment along the circumference
-    const segmentWidth = (2 * Math.PI * radius / segments) * 1.05;
+    // Never allow fewer than 2 segments
+    segments = Math.max(2, Math.floor(segments));
+
+    const angleStep = (Math.PI * 2) / segments;
+
+    // Calculate width so neighboring rectangle ends meet.
+    // The extra 2% ensures a tiny overlap to prevent physics gaps.
+    const segmentWidth = 2 * radius * Math.tan(angleStep / 2) * 1.02;
 
     for (let i = 0; i < segments; i++) {
-        const angle = (i / segments) * Math.PI * 2;
+        const rotationOffset = segments === 3 ? Math.PI / 2 : 0;
+        const angle = i * angleStep + rotationOffset;
 
         const segment = Matter.Bodies.rectangle(
             x + Math.cos(angle) * radius,
@@ -18,6 +25,7 @@ export function HollowCircle(x, y, radius, segments = 64) {
             thickness,
             {
                 isStatic: true,
+                label: "circle_part",
                 angle: angle + Math.PI / 2,
                 friction: 0,
                 restitution: 0.9,
